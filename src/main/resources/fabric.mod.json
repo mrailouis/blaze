@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "blaze",
+	"version": "${version}",
+	"name": "BLAZE",
+	"description": "A clean Fabric client foundation for the BLAZE GUI and rendering stack.",
+	"authors": [
+		"mrai"
+	],
+	"contact": {
+		"homepage": "https://github.com/mrai/blaze",
+		"sources": "https://github.com/mrai/blaze"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/blaze/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"main": [
+			{
+				"value": "me.mrai.blaze.Blaze",
+				"adapter": "kotlin"
+			}
+		],
+		"client": [
+			{
+				"value": "me.mrai.blaze.BlazeClient",
+				"adapter": "kotlin"
+			}
+		]
+	},
+	"mixins": [
+		"blaze.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*",
+		"fabric-language-kotlin": "*"
+	}
+}

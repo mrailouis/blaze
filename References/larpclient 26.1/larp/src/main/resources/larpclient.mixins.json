@@ -1,0 +1,57 @@
+{
+  "required": true,
+  "package": "me.mrai.larpclient.mixin",
+  "compatibilityLevel": "JAVA_22",
+  "mixins": [
+    "AbilityCooldownGuiGraphicsMixin",
+    "AbilityCooldownUseItemMixin",
+    "AbstractContainerScreenAccessor",
+    "AbstractContainerScreenImprovedMenusMixin",
+    "AbstractContainerScreenSlotLockingMixin",
+    "AbstractContainerScreenStorageOverlayMixin",
+    "AvatarRendererScaleMixin",
+    "BlockPickobulusUseItemMixin",
+    "ChatComponentNameOverrideMixin",
+    "ClientPacketListenerStorageGuiMixin",
+    "ContainerScreenImprovedMenusMixin",
+    "ContainerScreenStorageOverlayMixin",
+    "DotCommandSuggestionsMixin",
+    "EntityRendererNameOverrideMixin",
+    "FontNameOverrideMixin",
+    "GameNarratorMixin",
+    "GuiGraphicsExtractorAccessor",
+    "GuiMixin",
+    "GuiRendererRoundRectMixin",
+    "HeadsScaleGuiGraphicsMixin",
+    "HideScoreboardMixin",
+    "LevelVisualBlockMixin",
+    "LivingEntityRenderStateMixin",
+    "LivingEntityRendererScaleMixin",
+    "LocalPlayerSlotLockingMixin",
+    "MinecraftScreenSuppressMixin",
+    "PerformanceConnectionMixin",
+    "PlayerTabOverlayNameOverrideMixin",
+    "RenderSectionRegionMixin",
+    "ScreenPreventCursorResetMixin",
+    "SectionCopyMixin",
+    "ShulkerBoxScreenStorageOverlayMixin",
+    "SodiumLevelSliceMixin",
+    "SystemChatCaptureMixin",
+    "TitlePacketCaptureMixin",
+    "TrueSplitsSoundMixin"
+  ],
+  "client": [
+    "BossHealthOverlayAccessor",
+    "ClientInputAccessor",
+    "GuiAccessor",
+    "MinecraftAccessor",
+    "MinecraftInvoker",
+    "MultiPlayerGameModeInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
