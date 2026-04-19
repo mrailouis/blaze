@@ -35,7 +35,7 @@ object BlazeColorPalette {
     const val TITLE_START = 0xFFFF4E2F.toInt()
     const val TITLE_END = 0xFFFFD54A.toInt()
     const val SHADOW = 0x55000000
-    const val GLOW_START = 0x2AFF3030
+    const val GLOW_START = 0x2AFF1A1A
     const val GLOW_END = 0x00FFD54A
     const val SOFT_ACCENT = 0x99FF7A33.toInt()
 }

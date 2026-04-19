@@ -1,82 +1,105 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-	id("net.fabricmc.fabric-loom-remap")
-	`maven-publish`
-	id("org.jetbrains.kotlin.jvm") version "2.3.20"
+	base
 }
 
-version = providers.gradleProperty("mod_version").get()
-group = providers.gradleProperty("maven_group").get()
+data class VersionTarget(
+	val taskSuffix: String,
+	val displayVersion: String,
+	val projectPath: String,
+)
 
-repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
+val versionTargets = listOf(
+	VersionTarget("12110", "1.21.10", ":versions:mc1_21_10"),
+	VersionTarget("12111", "1.21.11", ":versions:mc1_21_11"),
+	VersionTarget("261", "26.1", ":versions:mc26_1"),
+)
+
+tasks.named("assemble") {
+	dependsOn(versionTargets.map { "${it.projectPath}:assemble" })
 }
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft("com.mojang:minecraft:${providers.gradleProperty("minecraft_version").get()}")
-	mappings(loom.officialMojangMappings())
-	modImplementation("net.fabricmc:fabric-loader:${providers.gradleProperty("loader_version").get()}")
-
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation("net.fabricmc.fabric-api:fabric-api:${providers.gradleProperty("fabric_api_version").get()}")
-	modImplementation("net.fabricmc:fabric-language-kotlin:${providers.gradleProperty("fabric_kotlin_version").get()}")
+tasks.register("compileJava") {
+	group = "build"
+	description = "Compiles Java sources for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:compileJava" })
 }
 
-tasks.processResources {
-	inputs.property("version", version)
+tasks.register("compileKotlin") {
+	group = "build"
+	description = "Compiles Kotlin sources for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:compileKotlin" })
+}
 
-	filesMatching(listOf("fabric.mod.json", "blaze.properties")) {
-		expand("version" to version)
+tasks.register("processResources") {
+	group = "build"
+	description = "Processes resources for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:processResources" })
+}
+
+tasks.register("classes") {
+	group = "build"
+	description = "Assembles classes for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:classes" })
+}
+
+tasks.register("mainClasses") {
+	group = "build"
+	description = "Assembles main classes for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:mainClasses" })
+}
+
+tasks.register("compileTestJava") {
+	group = "build"
+	description = "Compiles test Java sources for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:compileTestJava" })
+}
+
+tasks.register("compileTestKotlin") {
+	group = "build"
+	description = "Compiles test Kotlin sources for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:compileTestKotlin" })
+}
+
+tasks.register("processTestResources") {
+	group = "build"
+	description = "Processes test resources for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:processTestResources" })
+}
+
+tasks.register("testClasses") {
+	group = "build"
+	description = "Assembles test classes for all supported versions."
+	dependsOn(versionTargets.map { "${it.projectPath}:testClasses" })
+}
+
+tasks.named("check") {
+	dependsOn(versionTargets.map { "${it.projectPath}:check" })
+}
+
+tasks.named("build") {
+	dependsOn(versionTargets.map { "${it.projectPath}:build" })
+}
+
+tasks.named("clean") {
+	dependsOn(versionTargets.map { "${it.projectPath}:clean" })
+}
+
+versionTargets.forEach { target ->
+	tasks.register("build${target.taskSuffix}") {
+		group = "build"
+		description = "Builds Blaze for Minecraft ${target.displayVersion}."
+		dependsOn("${target.projectPath}:build")
 	}
-}
 
-tasks.withType<JavaCompile>().configureEach {
-	options.release = 21
-}
-
-kotlin {
-	compilerOptions {
-		jvmTarget = JvmTarget.JVM_21
-	}
-}
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-}
-
-tasks.jar {
-	inputs.property("projectName", project.name)
-
-	from("LICENSE") {
-		rename { "${it}_${project.name}" }
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		register<MavenPublication>("mavenJava") {
-			from(components["java"])
-		}
+	tasks.register("runClient${target.taskSuffix}") {
+		group = "fabric"
+		description = "Runs the Blaze client for Minecraft ${target.displayVersion}."
+		dependsOn("${target.projectPath}:runClient")
 	}
 
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
+	tasks.register("runServer${target.taskSuffix}") {
+		group = "fabric"
+		description = "Runs the Blaze server for Minecraft ${target.displayVersion}."
+		dependsOn("${target.projectPath}:runServer")
 	}
 }

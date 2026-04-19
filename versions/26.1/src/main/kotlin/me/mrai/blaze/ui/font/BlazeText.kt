@@ -17,7 +17,7 @@ import me.mrai.blaze.platform.BlazeIdentifier
 import me.mrai.blaze.platform.BlazeIdentifiers
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.texture.DynamicTexture
 
@@ -91,7 +91,7 @@ object BlazeText {
     }
 
     fun draw(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         font: Font,
         text: String,
         x: Int,
@@ -108,7 +108,7 @@ object BlazeText {
     }
 
     fun drawScaled(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         font: Font,
         text: String,
         x: Int,
@@ -126,7 +126,7 @@ object BlazeText {
     }
 
     fun drawGradientTitle(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         font: Font,
         text: String,
         x: Int,
@@ -143,7 +143,7 @@ object BlazeText {
     }
 
     private fun drawInternal(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         text: String,
         x: Int,
         y: Int,

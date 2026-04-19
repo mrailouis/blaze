@@ -3,12 +3,12 @@
 	"id": "blaze",
 	"version": "${version}",
 	"name": "BLAZE",
-	"description": "A clean Fabric client foundation for the BLAZE GUI and rendering stack.",
+	"description": "Not so private mod to help me with blaze slayer.",
 	"authors": [
 		"mrai"
 	],
 	"contact": {
-		"homepage": "https://github.com/mrai/blaze",
+		"homepage": "https://mrai.paged.dev",
 		"sources": "https://github.com/mrai/blaze"
 	},
 	"license": "CC0-1.0",
@@ -33,8 +33,8 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.19.2",
-		"minecraft": "~1.21.11",
-		"java": ">=21",
+		"minecraft": "~${minecraft_dependency}",
+		"java": ">=${java_dependency}",
 		"fabric-api": "*",
 		"fabric-language-kotlin": "*"
 	}

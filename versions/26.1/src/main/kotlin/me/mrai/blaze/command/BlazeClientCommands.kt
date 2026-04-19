@@ -8,7 +8,7 @@ import me.mrai.blaze.feature.blaze.BlazePathfindController
 import me.mrai.blaze.ui.clickgui.BlazeClickGuiScreen
 import me.mrai.blaze.ui.clickgui.BlazeEditHudsScreen
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.minecraft.core.BlockPos
 
@@ -22,31 +22,31 @@ object BlazeClientCommands {
         @Suppress("UNUSED_PARAMETER") buildContext: net.minecraft.commands.CommandBuildContext
     ) {
         dispatcher.register(
-            ClientCommandManager.literal("blaze")
+            ClientCommands.literal("blaze")
                 .executes { runIfEnabled(it.source) { openClickGui(it.source) } }
-                .then(ClientCommandManager.literal("help").executes { runIfEnabled(it.source) { sendHelp(it.source) } })
-                .then(ClientCommandManager.literal("toggle").executes { toggleBlaze(it.source) })
+                .then(ClientCommands.literal("help").executes { runIfEnabled(it.source) { sendHelp(it.source) } })
+                .then(ClientCommands.literal("toggle").executes { toggleBlaze(it.source) })
                 .then(
-                    ClientCommandManager.literal("splits")
-                        .then(ClientCommandManager.literal("recent").executes { runIfEnabled(it.source) { sendSplits(it.source, recent = true) } })
-                        .then(ClientCommandManager.literal("average").executes { runIfEnabled(it.source) { sendSplits(it.source, recent = false) } })
+                    ClientCommands.literal("splits")
+                        .then(ClientCommands.literal("recent").executes { runIfEnabled(it.source) { sendSplits(it.source, recent = true) } })
+                        .then(ClientCommands.literal("average").executes { runIfEnabled(it.source) { sendSplits(it.source, recent = false) } })
                 )
                 .then(
-                    ClientCommandManager.literal("profit")
+                    ClientCommands.literal("profit")
                         .executes { runIfEnabled(it.source) { sendProfit(it.source) } }
-                        .then(ClientCommandManager.literal("reset").executes { runIfEnabled(it.source) { resetProfit(it.source) } })
-                        .then(ClientCommandManager.literal("fullreset").executes { runIfEnabled(it.source) { fullResetProfit(it.source) } })
+                        .then(ClientCommands.literal("reset").executes { runIfEnabled(it.source) { resetProfit(it.source) } })
+                        .then(ClientCommands.literal("fullreset").executes { runIfEnabled(it.source) { fullResetProfit(it.source) } })
                 )
-                .then(ClientCommandManager.literal("cleandata").executes { runIfEnabled(it.source) { cleanData(it.source) } })
+                .then(ClientCommands.literal("cleandata").executes { runIfEnabled(it.source) { cleanData(it.source) } })
                 .then(
-                    ClientCommandManager.literal("pathfind")
+                    ClientCommands.literal("pathfind")
                         .executes { runIfEnabled(it.source) { pathfindToNearestBlaze(it.source) } }
                         .then(
-                            ClientCommandManager.argument("x", IntegerArgumentType.integer())
+                            ClientCommands.argument("x", IntegerArgumentType.integer())
                                 .then(
-                                    ClientCommandManager.argument("y", IntegerArgumentType.integer())
+                                    ClientCommands.argument("y", IntegerArgumentType.integer())
                                         .then(
-                                            ClientCommandManager.argument("z", IntegerArgumentType.integer())
+                                            ClientCommands.argument("z", IntegerArgumentType.integer())
                                                 .executes {
                                                     runIfEnabled(it.source) {
                                                         pathfindToCoordinates(
@@ -62,12 +62,12 @@ object BlazeClientCommands {
                         )
                 )
                 .then(
-                    ClientCommandManager.literal("pathdebug")
+                    ClientCommands.literal("pathdebug")
                         .executes { runIfEnabled(it.source) { setPathDebug(it.source, true) } }
-                        .then(ClientCommandManager.literal("on").executes { runIfEnabled(it.source) { setPathDebug(it.source, true) } })
-                        .then(ClientCommandManager.literal("off").executes { runIfEnabled(it.source) { setPathDebug(it.source, false) } })
+                        .then(ClientCommands.literal("on").executes { runIfEnabled(it.source) { setPathDebug(it.source, true) } })
+                        .then(ClientCommands.literal("off").executes { runIfEnabled(it.source) { setPathDebug(it.source, false) } })
                 )
-                .then(ClientCommandManager.literal("edge").executes { runIfEnabled(it.source) { renderPlatformEdges(it.source) } })
+                .then(ClientCommands.literal("edge").executes { runIfEnabled(it.source) { renderPlatformEdges(it.source) } })
                 .then(hudEditorAlias("edithuds"))
                 .then(hudEditorAlias("hud"))
                 .then(hudEditorAlias("gui"))
@@ -75,7 +75,7 @@ object BlazeClientCommands {
         )
     }
 
-    private fun hudEditorAlias(name: String) = ClientCommandManager.literal(name)
+    private fun hudEditorAlias(name: String) = ClientCommands.literal(name)
         .executes { runIfEnabled(it.source) { openHudEditor(it.source) } }
 
     private fun runIfEnabled(source: FabricClientCommandSource, action: () -> Int): Int {

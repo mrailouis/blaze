@@ -4,7 +4,7 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [],
 	"client": [
-		"MinecraftInvoker"
+		"IMixin.IMixinMinecraftClientInvoker"
 	],
 	"injectors": {
 		"defaultRequire": 1

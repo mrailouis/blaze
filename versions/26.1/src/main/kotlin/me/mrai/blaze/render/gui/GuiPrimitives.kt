@@ -13,7 +13,7 @@ import kotlin.math.roundToInt
 import me.mrai.blaze.platform.BlazeIdentifier
 import me.mrai.blaze.platform.BlazeIdentifiers
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.renderer.RenderPipelines
 import net.minecraft.client.renderer.texture.DynamicTexture
 
@@ -29,7 +29,7 @@ object GuiPrimitives {
      * anti-aliased texture path so the corners stay properly rounded instead
      * of stepping across integer scanlines.
      */
-    fun fillRoundedRect(graphics: GuiGraphics, rect: GuiRect, radius: Int, color: Int) {
+    fun fillRoundedRect(graphics: GuiGraphicsExtractor, rect: GuiRect, radius: Int, color: Int) {
         if (rect.width <= 0 || rect.height <= 0) return
 
         val clampedRadius = radius.coerceIn(0, minOf(rect.width, rect.height) / 2)
@@ -63,7 +63,7 @@ object GuiPrimitives {
     }
 
     fun drawRoundedFrame(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         rect: GuiRect,
         radius: Int,
         borderColor: Int,
@@ -74,7 +74,7 @@ object GuiPrimitives {
     }
 
     fun drawSoftShadow(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         rect: GuiRect,
         radius: Int,
         shadowColor: Int = BlazeColorPalette.SHADOW,
@@ -89,7 +89,7 @@ object GuiPrimitives {
     }
 
     fun drawGradientShadow(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         rect: GuiRect,
         radius: Int,
         innerColor: Int,

@@ -1,9 +1,9 @@
 package me.mrai.blaze.feature.autoclicker
 
 import com.mojang.blaze3d.platform.InputConstants
-import me.mrai.blaze.data.BlazeDataStore
-import me.mrai.blaze.mixin.MinecraftInvoker
-import me.mrai.blaze.ui.clickgui.model.BlazeModuleIds
+import me.mrai.blaze.config.BlazeDataStore
+import me.mrai.blaze.feature.module.BlazeModuleIds
+import me.mrai.blaze.mixin.IMixin.IMixinMinecraftClientInvoker
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import org.lwjgl.glfw.GLFW
@@ -46,10 +46,12 @@ object AutoclickerController {
     }
 
     private fun processSide(client: Minecraft, side: AutoclickerSide, config: SideAutoclickerConfig) {
+        val currentDown = isBindDown(client, config.bind)
         if (!config.enabled) {
+            toggled[side] = false
+            lastBindDown[side] = currentDown
             return
         }
-        val currentDown = isBindDown(client, config.bind)
         val wasDown = lastBindDown.getValue(side)
 
         if (config.activationMode == AutoclickerActivationMode.TOGGLE && currentDown && !wasDown) {
@@ -68,7 +70,7 @@ object AutoclickerController {
             return
         }
 
-        val invoker = client as MinecraftInvoker
+        val invoker = client as IMixinMinecraftClientInvoker
         when (side) {
             AutoclickerSide.LEFT -> invoker.`blaze$startAttack`()
             AutoclickerSide.RIGHT -> invoker.`blaze$startUseItem`()

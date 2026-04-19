@@ -1,11 +1,11 @@
-package me.mrai.blaze.mixin;
+package me.mrai.blaze.mixin.IMixin;
 
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(Minecraft.class)
-public interface MinecraftInvoker {
+public interface IMixinMinecraftClientInvoker {
     @Invoker("startAttack")
     boolean blaze$startAttack();
 

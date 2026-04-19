@@ -1,4 +1,4 @@
-package me.mrai.blaze.ui.clickgui.model
+package me.mrai.blaze.ui.clickgui
 
 import kotlin.math.roundToInt
 import me.mrai.blaze.render.gui.GuiRect

@@ -6,19 +6,17 @@ import me.mrai.blaze.config.BlazeDataStore
 import me.mrai.blaze.platform.BlazeIdentifiers
 import me.mrai.blaze.ui.clickgui.BlazeClickGuiScreen
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper
 import net.minecraft.client.KeyMapping
 import org.lwjgl.glfw.GLFW
 
 object BlazeKeyBindings {
-    private val generalCategory = KeyMapping.Category.register(
-        BlazeIdentifiers.of(Blaze.MOD_ID, "general")
-    )
+    private val generalCategory = KeyMapping.Category(BlazeIdentifiers.of(Blaze.MOD_ID, "general"))
 
     private lateinit var clickGuiKey: KeyMapping
 
     fun register() {
-        clickGuiKey = KeyBindingHelper.registerKeyBinding(
+        clickGuiKey = KeyMappingHelper.registerKeyMapping(
             KeyMapping(
                 "key.blaze.click_gui",
                 InputConstants.Type.KEYSYM,

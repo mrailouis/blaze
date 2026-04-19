@@ -10,7 +10,6 @@ import me.mrai.blaze.feature.autoclicker.AutoclickerSide
 import me.mrai.blaze.feature.autoclicker.BlazeInputBind
 import me.mrai.blaze.feature.autoclicker.BlazeInputType
 import me.mrai.blaze.feature.autoclicker.SideAutoclickerConfig
-import me.mrai.blaze.feature.blaze.BlazePathfinderConfig
 import me.mrai.blaze.meta.BlazeMetadata
 import me.mrai.blaze.render.gui.BlazeColorPalette
 import me.mrai.blaze.render.gui.GuiPrimitives
@@ -20,7 +19,7 @@ import me.mrai.blaze.feature.module.BlazeModule
 import me.mrai.blaze.feature.module.BlazeModuleIds
 import me.mrai.blaze.ui.font.BlazeText
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
@@ -44,7 +43,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     private val autoclickerModeRegions = mutableMapOf<AutoclickerSide, GuiRect>()
     private val autoclickerModeOptionRegions = mutableListOf<ModeOptionRegion>()
     private val autoclickerBindRegions = mutableMapOf<AutoclickerSide, GuiRect>()
-    private val pathfinderSliderRegions = mutableMapOf<PathfinderSliderKey, GuiRect>()
 
     private var selectedCategory = BlazeCategory.GENERAL
     private var expandedModuleId: String? = null
@@ -62,7 +60,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     private var moduleScrollVelocity = 0f
     private var moduleScrollMax = 0f
     private var activeSliderSide: AutoclickerSide? = null
-    private var activePathfinderSlider: PathfinderSliderKey? = null
     private var awaitingBindSide: AutoclickerSide? = null
     private var openModeDropdownSide: AutoclickerSide? = null
     private var leftAutoclickerExpanded = true
@@ -76,7 +73,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         panelY = layout.panel.y
     }
 
-    override fun render(graphics: GuiGraphics, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(graphics: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val openProgress = ((System.nanoTime() - openedAtNanos) / 120_000_000.0).toFloat().coerceIn(0f, 1f)
         val eased = easeOutCubic(openProgress)
         graphics.fill(0, 0, width, height, withAlpha(BlazeColorPalette.SCREEN_SCRIM, eased))
@@ -90,7 +87,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         autoclickerModeRegions.clear()
         autoclickerModeOptionRegions.clear()
         autoclickerBindRegions.clear()
-        pathfinderSliderRegions.clear()
         dragHeaderBounds = GuiRect(layout.panel.x, layout.panel.y, layout.panel.width, layout.headerHeight)
         editHudsButtonBounds = null
         moduleListBounds = null
@@ -130,7 +126,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
                 return true
             }
             editHudsButtonBounds?.takeIf { it.contains(mouseButtonEvent.x(), mouseButtonEvent.y()) }?.let {
-                minecraft?.setScreen(BlazeEditHudsScreen())
+                minecraft.setScreen(BlazeEditHudsScreen())
                 return true
             }
             categoryRegions.firstOrNull { it.bounds.contains(mouseButtonEvent.x(), mouseButtonEvent.y()) }?.let { region ->
@@ -140,7 +136,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
                 moduleScrollTarget = 0f
                 moduleScrollVelocity = 0f
                 activeSliderSide = null
-                activePathfinderSlider = null
                 awaitingBindSide = null
                 openModeDropdownSide = null
                 return true
@@ -157,7 +152,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
                 if (region.module.expandable) {
                     expandedModuleId = if (expandedModuleId == region.module.id) null else region.module.id
                     activeSliderSide = null
-                    activePathfinderSlider = null
                     awaitingBindSide = null
                     openModeDropdownSide = null
                     return true
@@ -171,10 +165,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     override fun mouseDragged(mouseButtonEvent: MouseButtonEvent, dragX: Double, dragY: Double): Boolean {
         activeSliderSide?.let { side ->
             updateSlider(side, mouseButtonEvent.x())
-            return true
-        }
-        activePathfinderSlider?.let { slider ->
-            updatePathfinderSlider(slider, mouseButtonEvent.x())
             return true
         }
 
@@ -191,7 +181,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
 
     override fun mouseReleased(mouseButtonEvent: MouseButtonEvent): Boolean {
         activeSliderSide = null
-        activePathfinderSlider = null
         if (mouseButtonEvent.button() == 0 && draggingPanel) {
             draggingPanel = false
             return true
@@ -229,7 +218,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
 
     override fun isPauseScreen(): Boolean = false
 
-    private fun renderPanelShell(graphics: GuiGraphics, layout: ClickGuiLayout) {
+    private fun renderPanelShell(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout) {
         GuiPrimitives.drawGradientShadow(
             graphics = graphics,
             rect = layout.panel,
@@ -246,7 +235,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         )
     }
 
-    private fun renderHeader(graphics: GuiGraphics, layout: ClickGuiLayout) {
+    private fun renderHeader(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout) {
         fun s(value: Int): Int = (value * layout.uiScale).toInt()
 
         val titleX = layout.panel.x + s(24)
@@ -274,7 +263,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         )
     }
 
-    private fun renderCategoryRail(graphics: GuiGraphics, layout: ClickGuiLayout) {
+    private fun renderCategoryRail(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout) {
         fun s(value: Int): Int = (value * layout.uiScale).toInt()
 
         BlazeText.draw(
@@ -334,7 +323,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         drawCenteredText(graphics, buttonBounds, "Edit HUDs", BlazeColorPalette.TEXT_PRIMARY, scale = editHudScale, bold = true)
     }
 
-    private fun renderModulePane(graphics: GuiGraphics, layout: ClickGuiLayout) {
+    private fun renderModulePane(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout) {
         fun s(value: Int): Int = (value * layout.uiScale).toInt()
 
         BlazeText.draw(
@@ -397,7 +386,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun renderModuleCard(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         layout: ClickGuiLayout,
         module: BlazeModule,
         rect: GuiRect,
@@ -441,47 +430,13 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         graphics.enableScissor(contentRect.x, contentRect.y, contentRect.right, contentRect.bottom)
         if (module.id == BlazeModuleIds.AUTOCLICKER) {
             renderAutoclickerContent(graphics, layout, contentRect, state)
-        } else if (module.id == BlazeModuleIds.BLAZE_PATHFINDER) {
-            renderPathfinderContent(graphics, layout, contentRect, state)
         } else if (module.children.isNotEmpty()) {
             renderModuleChildren(graphics, layout, contentRect, module)
         }
         graphics.disableScissor()
     }
 
-    private fun renderPathfinderContent(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, state: ModuleRenderState) {
-        fun s(value: Int): Int = (value * layout.uiScale).toInt()
-
-        val config = BlazeDataStore.state.pathfinder ?: BlazePathfinderConfig()
-        val accentColor = BlazeColorPalette.TITLE_START
-        val controlRight = rect.right - s(4)
-        val sliderWidth = s(116)
-        val controlHeight = s(18)
-        val rowGap = s(8)
-        var currentY = rect.y + s(8)
-
-        PathfinderSliderKey.entries.forEach { slider ->
-            val sliderRect = GuiRect(controlRight - sliderWidth, currentY + s(2), sliderWidth, s(14))
-            if (state.expandedProgress > 0.95f) {
-                pathfinderSliderRegions[slider] = sliderRect
-            }
-
-            BlazeText.draw(graphics, font, slider.label, rect.x + s(2), currentY + s(5), BlazeColorPalette.TEXT_SECONDARY)
-            BlazeText.draw(
-                graphics,
-                font,
-                slider.displayValue(config),
-                sliderRect.x - BlazeText.width(font, slider.displayValue(config), bold = true) - s(6),
-                currentY + s(5),
-                accentColor,
-                bold = true
-            )
-            drawNormalizedSlider(graphics, layout, sliderRect, slider.progress(config))
-            currentY += controlHeight + rowGap
-        }
-    }
-
-    private fun renderAutoclickerContent(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, state: ModuleRenderState) {
+    private fun renderAutoclickerContent(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout, rect: GuiRect, state: ModuleRenderState) {
         fun s(value: Int): Int = (value * layout.uiScale).toInt()
 
         val config = BlazeDataStore.state.autoclicker ?: return
@@ -512,7 +467,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun renderAutoclickerSide(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         layout: ClickGuiLayout,
         parentRect: GuiRect,
         startY: Int,
@@ -555,7 +510,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun renderAutoclickerSection(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         layout: ClickGuiLayout,
         fullRect: GuiRect,
         visibleRect: GuiRect,
@@ -646,7 +601,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         graphics.disableScissor()
     }
 
-    private fun renderModuleChildren(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, module: BlazeModule) {
+    private fun renderModuleChildren(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout, rect: GuiRect, module: BlazeModule) {
         fun s(value: Int): Int = (value * layout.uiScale).toInt()
 
         var currentY = rect.y + s(10)
@@ -664,7 +619,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun drawToggleSwitch(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         layout: ClickGuiLayout,
         rect: GuiRect,
         progress: Float
@@ -695,7 +650,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         )
     }
 
-    private fun drawCompactControl(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, text: String, highlightProgress: Float) {
+    private fun drawCompactControl(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout, rect: GuiRect, text: String, highlightProgress: Float) {
         val accentColor = BlazeColorPalette.TITLE_START
         val radius = (rect.height / 2).coerceAtMost(layout.elementRadius)
         val progress = highlightProgress.coerceIn(0f, 1f)
@@ -716,28 +671,24 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         )
     }
 
-    private fun drawDropdownButton(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, text: String, progress: Float) {
+    private fun drawDropdownButton(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout, rect: GuiRect, text: String, progress: Float) {
         drawCompactControl(graphics, layout, rect, text, progress)
     }
 
-    private fun drawDropdownOption(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, text: String, selected: Boolean) {
+    private fun drawDropdownOption(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout, rect: GuiRect, text: String, selected: Boolean) {
         drawCompactControl(graphics, layout, rect, text, if (selected) 1f else 0f)
     }
 
-    private fun drawSlider(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, value: Int) {
-        drawNormalizedSlider(graphics, layout, rect, value.coerceIn(0, 30) / 30f)
-    }
-
-    private fun drawNormalizedSlider(graphics: GuiGraphics, layout: ClickGuiLayout, rect: GuiRect, progress: Float) {
+    private fun drawSlider(graphics: GuiGraphicsExtractor, layout: ClickGuiLayout, rect: GuiRect, value: Int) {
         val accentColor = BlazeColorPalette.TITLE_START
         val track = GuiRect(rect.x, rect.y + rect.height / 2 - 1, rect.width, 3)
         GuiPrimitives.fillRoundedRect(graphics, track, 2, withAlpha(BlazeColorPalette.CARD_RIM, 0.85f))
 
-        val clampedProgress = progress.coerceIn(0f, 1f)
-        val fillWidth = (track.width * clampedProgress).roundToInt().coerceAtLeast(3)
+        val progress = value.coerceIn(0, 30) / 30f
+        val fillWidth = (track.width * progress).roundToInt().coerceAtLeast(3)
         GuiPrimitives.fillRoundedRect(graphics, GuiRect(track.x, track.y, fillWidth, track.height), 2, accentColor)
         val knobSize = 6
-        val knobX = (track.x + (track.width * clampedProgress).roundToInt()).coerceIn(track.x, track.right)
+        val knobX = (track.x + (track.width * progress).roundToInt()).coerceIn(track.x, track.right)
         GuiPrimitives.fillRoundedRect(
             graphics,
             GuiRect(knobX - knobSize / 2, track.y - 1, knobSize, knobSize),
@@ -747,7 +698,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun drawCenteredText(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         rect: GuiRect,
         text: String,
         color: Int,
@@ -762,7 +713,7 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun drawWrappedCenteredText(
-        graphics: GuiGraphics,
+        graphics: GuiGraphicsExtractor,
         rect: GuiRect,
         lines: List<String>,
         color: Int,
@@ -784,13 +735,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
     }
 
     private fun handleModuleControlClick(mouseX: Double, mouseY: Double): Boolean {
-        pathfinderSliderRegions.entries.firstOrNull { it.value.contains(mouseX, mouseY) }?.let { (slider, _) ->
-            openModeDropdownSide = null
-            activeSliderSide = null
-            activePathfinderSlider = slider
-            updatePathfinderSlider(slider, mouseX)
-            return true
-        }
         autoclickerModeOptionRegions.firstOrNull { it.bounds.contains(mouseX, mouseY) }?.let { region ->
             setAutoclickerSide(region.side) { config -> config.copy(activationMode = region.mode) }
             openModeDropdownSide = null
@@ -798,7 +742,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         }
         autoclickerSliderRegions.entries.firstOrNull { it.value.contains(mouseX, mouseY) }?.let { (side, _) ->
             openModeDropdownSide = null
-            activePathfinderSlider = null
             activeSliderSide = side
             updateSlider(side, mouseX)
             return true
@@ -832,7 +775,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         autoclickerBindRegions.entries.firstOrNull { it.value.contains(mouseButtonEvent.x(), mouseButtonEvent.y()) }?.let { (side, _) ->
             awaitingBindSide = side
             activeSliderSide = null
-            activePathfinderSlider = null
             openModeDropdownSide = null
             return true
         }
@@ -849,12 +791,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         val slider = autoclickerSliderRegions[side] ?: return
         val progress = ((mouseX - slider.x) / slider.width.toDouble()).coerceIn(0.0, 1.0)
         setAutoclickerSide(side) { config -> config.copy(cps = (progress * 30.0).roundToInt().coerceIn(0, 30)) }
-    }
-
-    private fun updatePathfinderSlider(sliderKey: PathfinderSliderKey, mouseX: Double) {
-        val slider = pathfinderSliderRegions[sliderKey] ?: return
-        val progress = ((mouseX - slider.x) / slider.width.toDouble()).coerceIn(0.0, 1.0)
-        BlazeDataStore.updatePathfinder { config -> sliderKey.applyProgress(config, progress) }
     }
 
     private fun setAutoclickerSide(side: AutoclickerSide, transform: (SideAutoclickerConfig) -> SideAutoclickerConfig) {
@@ -914,11 +850,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
             return ModuleRenderState(enabledProgress, glowProgress, expandedProgress, leftReveal, rightReveal, leftDropdown, rightDropdown, headerHeight, titleLines, descriptionLines, headerHeight + expandedHeight)
         }
 
-        if (module.id == BlazeModuleIds.BLAZE_PATHFINDER) {
-            val expandedHeight = (pathfinderSectionHeight(layout) * expandedProgress).roundToInt()
-            return ModuleRenderState(enabledProgress, glowProgress, expandedProgress, 0f, 0f, 0f, 0f, headerHeight, titleLines, descriptionLines, headerHeight + expandedHeight)
-        }
-
         val childrenHeight = if (module.children.isNotEmpty()) {
             (s(12) + module.children.size * s(18) + s(8)) * expandedProgress
         } else {
@@ -945,11 +876,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         val baseHeight = s(70)
         val dropdownHeight = (s(39) * dropdownProgress.coerceIn(0f, 1f)).roundToInt()
         return baseHeight + dropdownHeight
-    }
-
-    private fun pathfinderSectionHeight(layout: ClickGuiLayout): Int {
-        fun s(value: Int): Int = (value * layout.uiScale).toInt()
-        return s(112)
     }
 
     private fun updateModuleScrollPhysics() {
@@ -1088,49 +1014,6 @@ class BlazeClickGuiScreen : Screen(Component.literal("BLAZE ClickGUI")) {
         val bold: Boolean,
         val maxLines: Int
     )
-
-    private enum class PathfinderSliderKey(
-        val label: String,
-        val minValue: Double,
-        val maxValue: Double
-    ) {
-        ROTATION_SPEED("Rotation Speed", 0.4, 5.0),
-        ROTATION_SMOOTHNESS("Rotation Smoothness", 0.5, 2.5),
-        MOVEMENT_LOOK_BIAS("Movement Look Bias", 0.1, 1.0),
-        HEAD_FREEDOM("Head Freedom", 10.0, 45.0);
-
-        fun progress(config: BlazePathfinderConfig): Float {
-            val value = currentValue(config)
-            return ((value - minValue) / (maxValue - minValue)).toFloat().coerceIn(0f, 1f)
-        }
-
-        fun displayValue(config: BlazePathfinderConfig): String {
-            val value = currentValue(config)
-            return when (this) {
-                HEAD_FREEDOM -> "${value.roundToInt()}deg"
-                else -> String.format("%.2f", value)
-            }
-        }
-
-        fun applyProgress(config: BlazePathfinderConfig, progress: Double): BlazePathfinderConfig {
-            val value = minValue + (maxValue - minValue) * progress.coerceIn(0.0, 1.0)
-            return when (this) {
-                ROTATION_SPEED -> config.copy(rotationSpeedMultiplier = value)
-                ROTATION_SMOOTHNESS -> config.copy(rotationSmoothness = value)
-                MOVEMENT_LOOK_BIAS -> config.copy(movementLookBias = value)
-                HEAD_FREEDOM -> config.copy(headFreedomDegrees = value)
-            }
-        }
-
-        private fun currentValue(config: BlazePathfinderConfig): Double {
-            return when (this) {
-                ROTATION_SPEED -> config.rotationSpeedMultiplier
-                ROTATION_SMOOTHNESS -> config.rotationSmoothness
-                MOVEMENT_LOOK_BIAS -> config.movementLookBias
-                HEAD_FREEDOM -> config.headFreedomDegrees
-            }
-        }
-    }
 
     private fun easeOutCubic(value: Float): Float {
         val inverted = 1f - value.coerceIn(0f, 1f)

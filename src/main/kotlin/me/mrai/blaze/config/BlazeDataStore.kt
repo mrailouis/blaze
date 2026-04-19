@@ -1,4 +1,4 @@
-package me.mrai.blaze.data
+package me.mrai.blaze.config
 
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
@@ -12,7 +12,8 @@ import me.mrai.blaze.feature.autoclicker.AutoclickerConfig
 import me.mrai.blaze.feature.autoclicker.BlazeInputBind
 import me.mrai.blaze.feature.autoclicker.BlazeInputType
 import me.mrai.blaze.feature.autoclicker.SideAutoclickerConfig
-import me.mrai.blaze.ui.clickgui.model.BlazeCategory
+import me.mrai.blaze.feature.blaze.BlazePathfinderConfig
+import me.mrai.blaze.feature.module.BlazeCategory
 import net.fabricmc.loader.api.FabricLoader
 
 object BlazeDataStore {
@@ -66,6 +67,11 @@ object BlazeDataStore {
         save()
     }
 
+    fun updatePathfinder(transform: (BlazePathfinderConfig) -> BlazePathfinderConfig) {
+        state = state.copy(pathfinder = transform(state.pathfinder ?: defaultPathfinder()))
+        save()
+    }
+
     fun resetSessionProfit() {
         state = state.copy(sessionProfit = 0L)
         save()
@@ -115,7 +121,8 @@ object BlazeDataStore {
             recentSplits = defaultSplitMap(),
             averageSplits = defaultSplitMap(),
             moduleStates = defaultModuleStates(),
-            autoclicker = defaultAutoclicker()
+            autoclicker = defaultAutoclicker(),
+            pathfinder = defaultPathfinder()
         )
     }
 
@@ -132,7 +139,8 @@ object BlazeDataStore {
             recentSplits = mergeSplitMap(loaded.recentSplits),
             averageSplits = mergeSplitMap(loaded.averageSplits),
             moduleStates = mergeModuleStates(loaded.moduleStates),
-            autoclicker = normalizeAutoclicker(loaded.autoclicker ?: defaults.autoclicker ?: defaultAutoclicker())
+            autoclicker = normalizeAutoclicker(loaded.autoclicker ?: defaults.autoclicker ?: defaultAutoclicker()),
+            pathfinder = normalizePathfinder(loaded.pathfinder ?: defaults.pathfinder ?: defaultPathfinder())
         )
     }
 
@@ -181,10 +189,23 @@ object BlazeDataStore {
         )
     }
 
+    private fun defaultPathfinder(): BlazePathfinderConfig {
+        return BlazePathfinderConfig()
+    }
+
     private fun normalizeAutoclicker(config: AutoclickerConfig): AutoclickerConfig {
         return config.copy(
             left = normalizeSide(config.left),
             right = normalizeSide(config.right)
+        )
+    }
+
+    private fun normalizePathfinder(config: BlazePathfinderConfig): BlazePathfinderConfig {
+        return config.copy(
+            rotationSpeedMultiplier = config.rotationSpeedMultiplier.coerceIn(0.4, 5.0),
+            rotationSmoothness = config.rotationSmoothness.coerceIn(0.5, 2.5),
+            movementLookBias = config.movementLookBias.coerceIn(0.1, 1.0),
+            headFreedomDegrees = config.headFreedomDegrees.coerceIn(10.0, 45.0)
         )
     }
 
@@ -222,5 +243,6 @@ data class BlazeClientState(
     val recentSplits: LinkedHashMap<String, String>? = null,
     val averageSplits: LinkedHashMap<String, String>? = null,
     val moduleStates: LinkedHashMap<String, Boolean>? = null,
-    val autoclicker: AutoclickerConfig? = null
+    val autoclicker: AutoclickerConfig? = null,
+    val pathfinder: BlazePathfinderConfig? = null
 )

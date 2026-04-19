@@ -2,6 +2,7 @@ package me.mrai.blaze.chat
 
 import me.mrai.blaze.meta.BlazeMetadata
 import me.mrai.blaze.render.gui.BlazeColorPalette
+import net.minecraft.client.Minecraft
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.MutableComponent
@@ -35,6 +36,22 @@ object BlazeChat {
 
     fun info(source: FabricClientCommandSource, message: String) {
         source.sendFeedback(prefixed(text(message)))
+    }
+
+    fun info(message: String) {
+        val player = Minecraft.getInstance().player ?: return
+        val chatMessage = prefixed(text(message))
+        val playerClass = player.javaClass
+        val sent = runCatching {
+            playerClass.getMethod("sendSystemMessage", Component::class.java).invoke(player, chatMessage)
+        }.isSuccess || runCatching {
+            playerClass.getMethod("displayClientMessage", Component::class.java, Boolean::class.javaPrimitiveType)
+                .invoke(player, chatMessage, false)
+        }.isSuccess
+
+        if (!sent) {
+            Minecraft.getInstance().gui.setOverlayMessage(chatMessage, false)
+        }
     }
 
     fun error(source: FabricClientCommandSource, message: String) {

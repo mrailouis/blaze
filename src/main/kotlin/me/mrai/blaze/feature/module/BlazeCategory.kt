@@ -1,4 +1,4 @@
-package me.mrai.blaze.ui.clickgui.model
+package me.mrai.blaze.feature.module
 
 object BlazeModuleIds {
     const val AUTOCLICKER = "general.autoclicker"
@@ -21,6 +21,7 @@ object BlazeModuleIds {
     const val PROFIT_TRACKER = "blaze.profit_tracker"
     const val SPLITS = "blaze.splits"
     const val CHAT_NOTIFICATIONS = "blaze.chat_notifications"
+    const val BLAZE_PATHFINDER = "blaze.pathfinder"
 }
 
 enum class BlazeCategory(
@@ -30,11 +31,11 @@ enum class BlazeCategory(
 ) {
     GENERAL(
         displayName = "General",
-        description = "Core utility modules and everyday client controls.",
+        description = "",
         modules = listOf(
-            BlazeModule(BlazeModuleIds.AUTOCLICKER, "Autoclicker", "Automated left and right clicking with custom binds.", configurable = true),
-            BlazeModule(BlazeModuleIds.BEACON_REMINDER, "Beacon Reminder", "Beacon timing reminders for general gameplay loops."),
-            BlazeModule(BlazeModuleIds.DARK_MODE_ISLE, "Dark Mode Isle", "A darker island presentation and ambience toggle.")
+            BlazeModule(BlazeModuleIds.AUTOCLICKER, "Autoclicker", "Clicks for you.", configurable = true),
+            BlazeModule(BlazeModuleIds.BEACON_REMINDER, "Beacon Reminder", "Tells you if your beacon is not on magic find."),
+            BlazeModule(BlazeModuleIds.DARK_MODE_ISLE, "Dark Mode Isle", "Overlays the smoldering tomb with a dark overlay.")
         )
     ),
     BLAZE(
@@ -55,6 +56,7 @@ enum class BlazeCategory(
             BlazeModule(BlazeModuleIds.RAGNAROCK, "Ragnarock", "Reminder, auto-cast, and cast-state notifications for Ragnarock.", children = listOf("Reminder", "Auto Ragnarock", "Casted / Cancelled notification")),
             BlazeModule(BlazeModuleIds.DEMON_ESP, "Demon ESP", "Highlights spawned demons for faster target pickup."),
             BlazeModule(BlazeModuleIds.DEMON_PRIORITY, "Demon Priority", "Helps prioritize demon targets during Blaze phases."),
+            BlazeModule(BlazeModuleIds.BLAZE_PATHFINDER, "Blaze Pathfinder", "Configure pathfinding rotation, look bias, and route follower behavior.", configurable = true),
             BlazeModule(BlazeModuleIds.PROFIT_TRACKER, "Profit Tracker", "Tracks run profit and session performance."),
             BlazeModule(
                 BlazeModuleIds.SPLITS,
